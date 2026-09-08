@@ -1,0 +1,281 @@
+<title>Portfólio — Relatividade Geral</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #f6f4ee;
+    --surface: #ffffff;
+    --surface-2: #efece2;
+    --ink: #1c1f2e;
+    --ink-soft: #565b6e;
+    --line: #ddd8c8;
+    --accent: #8a6a2f;
+    --accent-ink: #ffffff;
+    --badge-streamlit: #3d4a7a;
+    --badge-drive: #2f6b4f;
+    --focus: #8a6a2f;
+    --shadow: 220 20% 20%;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10121c;
+      --surface: #171a29;
+      --surface-2: #1e2233;
+      --ink: #e9e7dd;
+      --ink-soft: #a3a7bd;
+      --line: #2c3048;
+      --accent: #d7ae63;
+      --accent-ink: #171a29;
+      --badge-streamlit: #7f93e0;
+      --badge-drive: #6fc79a;
+      --focus: #d7ae63;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #10121c;
+    --surface: #171a29;
+    --surface-2: #1e2233;
+    --ink: #e9e7dd;
+    --ink-soft: #a3a7bd;
+    --line: #2c3048;
+    --accent: #d7ae63;
+    --accent-ink: #171a29;
+    --badge-streamlit: #7f93e0;
+    --badge-drive: #6fc79a;
+    --focus: #d7ae63;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    line-height: 1.5;
+  }
+
+  .page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 56px 28px 80px;
+  }
+
+  header {
+    position: relative;
+    padding-bottom: 32px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+
+  h1 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(2rem, 5vw, 2.9rem);
+    letter-spacing: -0.01em;
+    line-height: 1.08;
+    margin: 0 0 10px;
+    text-wrap: balance;
+    max-width: 20ch;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .lede {
+    font-size: 1.02rem;
+    color: var(--ink-soft);
+    max-width: 58ch;
+    margin: 0;
+  }
+
+  .lede strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .geodesic {
+    position: absolute;
+    right: 0;
+    top: 4px;
+    width: 168px;
+    height: 92px;
+    opacity: 0.55;
+  }
+
+  @media (max-width: 620px) {
+    .geodesic { display: none; }
+  }
+
+  section h2 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 500;
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+    margin: 0 0 20px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 22px 22px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .badge {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+    color: #fff;
+  }
+
+  .badge.streamlit { background: var(--badge-streamlit); }
+  .badge.drive { background: var(--badge-drive); }
+
+  .card h3 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.28rem;
+    margin: 0;
+    line-height: 1.25;
+  }
+
+  .card p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+    flex-grow: 1;
+  }
+
+  .card a.open {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    width: fit-content;
+  }
+
+  .card a.open:hover,
+  .card a.open:focus-visible {
+    border-bottom-color: var(--accent);
+  }
+
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .card a.open svg { width: 13px; height: 13px; }
+
+  .placeholder {
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    padding: 24px 22px;
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .placeholder svg { flex-shrink: 0; opacity: 0.6; width: 18px; height: 18px; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { transition: none; }
+  }
+</style>
+
+<div class="page">
+  <header>
+    <p class="eyebrow">Doutorado &middot; Relatividade Geral</p>
+    <h1>Ricardo Albrecht<br><em>notas &amp; simulações</em></h1>
+    <p class="lede"><strong>Página de acesso</strong> para o orientador acompanhar simulações interativas e materiais de apoio produzidos ao longo da pesquisa.</p>
+    <svg class="geodesic" viewBox="0 0 168 92" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 86 C 40 86, 40 20, 84 20 C 128 20, 128 60, 164 60" stroke="var(--accent)" stroke-width="1.4" opacity="0.7"/>
+      <path d="M4 70 C 44 70, 44 8, 90 8 C 132 8, 132 46, 164 46" stroke="var(--ink-soft)" stroke-width="1" opacity="0.35"/>
+      <circle cx="84" cy="20" r="3.5" fill="var(--accent)"/>
+    </svg>
+  </header>
+
+  <section aria-labelledby="sims-heading">
+    <h2 id="sims-heading">Simulações e materiais</h2>
+    <div class="grid">
+      <article class="card">
+        <div class="card-top">
+          <h3>Rotação de Wigner</h3>
+          <span class="badge streamlit">Streamlit</span>
+        </div>
+        <p>Simulação interativa da rotação de Wigner para composições sucessivas de boosts de Lorentz.</p>
+        <a class="open" href="https://rotacao-de-wigner.streamlit.app/" target="_blank" rel="noopener">
+          Abrir simulação
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
+        </a>
+      </article>
+
+      <div class="placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Mais itens serão adicionados em breve.
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Última atualização: setembro de 2026</span>
+    <span>Acesso restrito ao orientador</span>
+  </footer>
+</div>
