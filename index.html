@@ -238,6 +238,76 @@
   @media (prefers-reduced-motion: reduce) {
     .card { transition: none; }
   }
+
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "IBM Plex Sans", ui-sans-serif, sans-serif;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    padding: 11px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+
+  .btn.primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+  }
+
+  .btn.secondary {
+    background: var(--surface);
+    color: var(--ink);
+  }
+
+  .btn:hover { opacity: 0.88; }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 22px;
+  }
+
+  .info-card h3 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 0 0 10px;
+  }
+
+  .info-card p {
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    margin: 0 0 10px;
+  }
+
+  .info-card pre {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    margin: 0;
+  }
 </style>
 
 <div class="page">
@@ -270,6 +340,38 @@
       <div class="placeholder">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
         Mais itens serão adicionados em breve.
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="notebooks-heading">
+    <h2 id="notebooks-heading">Notebooks e programas</h2>
+
+    <div class="btn-row">
+      <a class="btn primary" href="https://github.com/ricardoalbfis/portifolio-doutorado/archive/refs/heads/main.zip">Baixar todos (.zip)</a>
+      <a class="btn secondary" href="https://github.com/ricardoalbfis/portifolio-doutorado/tree/main/notebooks" target="_blank" rel="noopener">Ver no GitHub ↗</a>
+    </div>
+
+    <div class="grid">
+      <div class="placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Notebooks aparecerão aqui assim que forem adicionados à pasta <code>notebooks/</code>.
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <h3>No Google Colab, sem instalar nada</h3>
+        <p>Cada notebook terá um botão <strong>Abrir no Colab</strong> que carrega o arquivo direto do repositório. Antes de alterar algo, use <em>Arquivo → Salvar uma cópia no Drive</em>.</p>
+        <p>O Colab já traz NumPy, SciPy, SymPy e Matplotlib — os notebooks rodam de cima a baixo sem instalação.</p>
+      </div>
+      <div class="info-card">
+        <h3>Na sua máquina</h3>
+        <p>Os arquivos <code>.py</code> rodam sem argumentos e não dependem uns dos outros.</p>
+        <pre>pip install jupyterlab numpy scipy sympy matplotlib
+
+jupyter lab               # abre os .ipynb
+python3 nome_do_arquivo.py</pre>
       </div>
     </div>
   </section>
