@@ -1,4 +1,6 @@
-<title>Portfólio — Relatividade Geral</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ricardo Albrecht — Portfólio</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
   :root {
@@ -12,8 +14,8 @@
     --accent-ink: #ffffff;
     --badge-streamlit: #3d4a7a;
     --badge-drive: #2f6b4f;
+    --badge-pdf: #8a3a3a;
     --focus: #8a6a2f;
-    --shadow: 220 20% 20%;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -28,6 +30,7 @@
       --accent-ink: #171a29;
       --badge-streamlit: #7f93e0;
       --badge-drive: #6fc79a;
+      --badge-pdf: #e08080;
       --focus: #d7ae63;
     }
   }
@@ -43,6 +46,7 @@
     --accent-ink: #171a29;
     --badge-streamlit: #7f93e0;
     --badge-drive: #6fc79a;
+    --badge-pdf: #e08080;
     --focus: #d7ae63;
   }
 
@@ -56,7 +60,7 @@
   }
 
   .page {
-    max-width: 880px;
+    max-width: 920px;
     margin: 0 auto;
     padding: 56px 28px 80px;
   }
@@ -64,7 +68,7 @@
   header {
     position: relative;
     padding-bottom: 32px;
-    margin-bottom: 40px;
+    margin-bottom: 36px;
     border-bottom: 1px solid var(--line);
   }
 
@@ -93,30 +97,51 @@
     color: var(--accent);
   }
 
-  .lede {
-    font-size: 1.02rem;
-    color: var(--ink-soft);
-    max-width: 58ch;
-    margin: 0;
-  }
-
-  .lede strong {
-    color: var(--ink);
-    font-weight: 600;
-  }
-
-  .geodesic {
+  .blackhole {
     position: absolute;
     right: 0;
-    top: 4px;
-    width: 168px;
-    height: 92px;
-    opacity: 0.55;
+    top: -6px;
+    width: 170px;
+    height: 110px;
+    opacity: 0.85;
   }
 
   @media (max-width: 620px) {
-    .geodesic { display: none; }
+    .blackhole { display: none; }
   }
+
+  nav.tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+  }
+
+  nav.tabs button {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 16px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  nav.tabs button:hover { color: var(--ink); }
+
+  nav.tabs button[aria-selected="true"] {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+
+  .tabpanel { display: none; }
+  .tabpanel.active { display: block; }
+
+  section + section { margin-top: 48px; }
 
   section h2 {
     font-family: "Newsreader", Georgia, serif;
@@ -127,11 +152,20 @@
     margin: 0 0 20px;
   }
 
+  h3.group {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+  }
+
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 16px;
-    margin-bottom: 48px;
+    margin-bottom: 28px;
   }
 
   .card {
@@ -170,11 +204,12 @@
 
   .badge.streamlit { background: var(--badge-streamlit); }
   .badge.drive { background: var(--badge-drive); }
+  .badge.pdf { background: var(--badge-pdf); }
 
   .card h3 {
     font-family: "Newsreader", Georgia, serif;
     font-weight: 600;
-    font-size: 1.28rem;
+    font-size: 1.2rem;
     margin: 0;
     line-height: 1.25;
   }
@@ -182,20 +217,32 @@
   .card p {
     margin: 0;
     color: var(--ink-soft);
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     flex-grow: 1;
   }
 
-  .card a.open {
+  .card-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .card a.open, .card span.open.disabled {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.88rem;
+    font-size: 0.86rem;
     font-weight: 500;
     color: var(--accent);
     text-decoration: none;
     border-bottom: 1px solid transparent;
     width: fit-content;
+  }
+
+  .card span.open.disabled {
+    color: var(--ink-soft);
+    opacity: 0.6;
+    cursor: default;
   }
 
   .card a.open:hover,
@@ -226,10 +273,6 @@
   footer {
     border-top: 1px solid var(--line);
     padding-top: 20px;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
     font-size: 0.82rem;
     color: var(--ink-soft);
     font-family: "IBM Plex Mono", ui-monospace, monospace;
@@ -238,158 +281,127 @@
   @media (prefers-reduced-motion: reduce) {
     .card { transition: none; }
   }
-
-  .btn-row {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-family: "IBM Plex Sans", ui-sans-serif, sans-serif;
-    font-weight: 500;
-    font-size: 0.9rem;
-    text-decoration: none;
-    padding: 11px 18px;
-    border-radius: 8px;
-    border: 1px solid var(--line);
-  }
-
-  .btn.primary {
-    background: var(--accent);
-    color: var(--accent-ink);
-    border-color: var(--accent);
-  }
-
-  .btn.secondary {
-    background: var(--surface);
-    color: var(--ink);
-  }
-
-  .btn:hover { opacity: 0.88; }
-
-  .info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 16px;
-    margin-bottom: 48px;
-  }
-
-  .info-card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 22px;
-  }
-
-  .info-card h3 {
-    font-family: "Newsreader", Georgia, serif;
-    font-weight: 600;
-    font-size: 1.1rem;
-    margin: 0 0 10px;
-  }
-
-  .info-card p {
-    color: var(--ink-soft);
-    font-size: 0.9rem;
-    margin: 0 0 10px;
-  }
-
-  .info-card pre {
-    background: var(--surface-2);
-    border-radius: 8px;
-    padding: 14px 16px;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 0.8rem;
-    overflow-x: auto;
-    margin: 0;
-  }
 </style>
 
 <div class="page">
   <header>
-    <p class="eyebrow">Doutorado &middot; Relatividade Geral</p>
-    <h1>Ricardo Albrecht<br><em>notas &amp; simulações</em></h1>
-    <p class="lede"><strong>Página de acesso</strong> para o orientador acompanhar simulações interativas e materiais de apoio produzidos ao longo da pesquisa.</p>
-    <svg class="geodesic" viewBox="0 0 168 92" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M4 86 C 40 86, 40 20, 84 20 C 128 20, 128 60, 164 60" stroke="var(--accent)" stroke-width="1.4" opacity="0.7"/>
-      <path d="M4 70 C 44 70, 44 8, 90 8 C 132 8, 132 46, 164 46" stroke="var(--ink-soft)" stroke-width="1" opacity="0.35"/>
-      <circle cx="84" cy="20" r="3.5" fill="var(--accent)"/>
+    <p class="eyebrow">Doutorado em Física</p>
+    <h1>Ricardo Albrecht<br><em>Portfólio de Atividades</em></h1>
+    <svg class="blackhole" viewBox="0 0 170 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="85" cy="55" rx="80" ry="16" stroke="var(--accent)" stroke-width="1.4" opacity="0.75"/>
+      <ellipse cx="85" cy="55" rx="80" ry="16" stroke="var(--ink-soft)" stroke-width="1" opacity="0.3" transform="rotate(8 85 55)"/>
+      <ellipse cx="85" cy="55" rx="55" ry="30" stroke="var(--ink-soft)" stroke-width="1" opacity="0.25"/>
+      <circle cx="85" cy="55" r="17" fill="var(--ink)"/>
+      <circle cx="85" cy="55" r="17" fill="none" stroke="var(--accent)" stroke-width="1.2" opacity="0.9"/>
     </svg>
   </header>
 
-  <section aria-labelledby="sims-heading">
-    <h2 id="sims-heading">Simulações e materiais</h2>
-    <div class="grid">
-      <article class="card">
-        <div class="card-top">
-          <h3>Rotação de Wigner</h3>
-          <span class="badge streamlit">Streamlit</span>
+  <nav class="tabs" role="tablist" aria-label="Seções do portfólio">
+    <button role="tab" aria-selected="true" aria-controls="panel-rg" id="tab-rg">Relatividade Geral</button>
+    <button role="tab" aria-selected="false" aria-controls="panel-cosmo" id="tab-cosmo">Introdução à Cosmologia</button>
+    <button role="tab" aria-selected="false" aria-controls="panel-projetos" id="tab-projetos">Outros Projetos</button>
+  </nav>
+
+  <div class="tabpanel active" id="panel-rg" role="tabpanel" aria-labelledby="tab-rg">
+
+    <section aria-labelledby="exres-heading">
+      <h2 id="exres-heading">Exercícios resolvidos</h2>
+      <div class="grid">
+        <div class="placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Nenhum PDF publicado ainda. Os exercícios resolvidos de cada capítulo aparecerão aqui.
         </div>
-        <p>Simulação interativa da rotação de Wigner para composições sucessivas de boosts de Lorentz.</p>
-        <a class="open" href="https://rotacao-de-wigner.streamlit.app/" target="_blank" rel="noopener">
-          Abrir simulação
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
-        </a>
-      </article>
-
-      <div class="placeholder">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-        Mais itens serão adicionados em breve.
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section aria-labelledby="notebooks-heading">
-    <h2 id="notebooks-heading">Notebooks e programas</h2>
+    <section aria-labelledby="notebooks-heading">
+      <h2 id="notebooks-heading">Notebooks e programas</h2>
 
-    <div class="btn-row">
-      <a class="btn primary" href="https://github.com/ricardoalbfis/portifolio-doutorado/archive/refs/heads/main.zip">Baixar todos (.zip)</a>
-      <a class="btn secondary" href="https://github.com/ricardoalbfis/portifolio-doutorado/tree/main/notebooks" target="_blank" rel="noopener">Ver no GitHub ↗</a>
-    </div>
+      <h3 class="group">Capítulo 1</h3>
+      <div class="grid">
+        <article class="card">
+          <div class="card-top">
+            <h3>Exercício 1 — Precessão do periélio</h3>
+            <span class="badge drive">Notebook</span>
+          </div>
+          <p>Cálculo e visualização da precessão do periélio prevista pela Relatividade Geral, comparada com a órbita newtoniana.</p>
+          <div class="card-links">
+            <a class="open" href="relatividade-geral/notebooks/cap01_ex1_precessao_perielio.ipynb" download>
+              Baixar
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>
+            </a>
+            <a class="open" href="https://github.com/ricardoalbfis/portifolio-doutorado/blob/main/relatividade-geral/notebooks/cap01_ex1_precessao_perielio.ipynb" target="_blank" rel="noopener">
+              Ver no GitHub
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
+            </a>
+            <a class="open" href="https://colab.research.google.com/github/ricardoalbfis/portifolio-doutorado/blob/main/relatividade-geral/notebooks/cap01_ex1_precessao_perielio.ipynb" target="_blank" rel="noopener">
+              Abrir no Colab
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
+            </a>
+            <span class="open disabled">Streamlit (em breve)</span>
+          </div>
+        </article>
 
-    <div class="grid">
-      <article class="card">
-        <div class="card-top">
-          <h3>Precessão do periélio</h3>
-          <span class="badge drive">Notebook</span>
+        <div class="placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Exercícios 2 e 3 do Capítulo 1 em breve.
         </div>
-        <p>Exemplo fictício: calcula e plota a precessão do periélio prevista pela Relatividade Geral, comparando com a órbita newtoniana.</p>
-        <a class="open" href="https://colab.research.google.com/github/ricardoalbfis/portifolio-doutorado/blob/main/notebooks/exemplo_orbita_precessao.ipynb" target="_blank" rel="noopener">
-          Abrir no Colab
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
-        </a>
-      </article>
-
-      <div class="placeholder">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-        Mais notebooks aparecerão aqui.
       </div>
-    </div>
+    </section>
 
-    <div class="info-grid">
-      <div class="info-card">
-        <h3>No Google Colab, sem instalar nada</h3>
-        <p>Cada notebook terá um botão <strong>Abrir no Colab</strong> que carrega o arquivo direto do repositório. Antes de alterar algo, use <em>Arquivo → Salvar uma cópia no Drive</em>.</p>
-        <p>O Colab já traz NumPy, SciPy, SymPy e Matplotlib — os notebooks rodam de cima a baixo sem instalação.</p>
-      </div>
-      <div class="info-card">
-        <h3>Na sua máquina</h3>
-        <p>Os arquivos <code>.py</code> rodam sem argumentos e não dependem uns dos outros.</p>
-        <pre>pip install jupyterlab numpy scipy sympy matplotlib
+  </div>
 
-jupyter lab               # abre os .ipynb
-python3 nome_do_arquivo.py</pre>
+  <div class="tabpanel" id="panel-cosmo" role="tabpanel" aria-labelledby="tab-cosmo">
+    <section aria-labelledby="cosmo-heading">
+      <h2 id="cosmo-heading">Notebooks e simulações</h2>
+      <div class="grid">
+        <div class="placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Conteúdo em preparação.
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
+
+  <div class="tabpanel" id="panel-projetos" role="tabpanel" aria-labelledby="tab-projetos">
+    <section aria-labelledby="projetos-heading">
+      <h2 id="projetos-heading">Demais projetos</h2>
+      <div class="grid">
+        <article class="card">
+          <div class="card-top">
+            <h3>Rotação de Wigner</h3>
+            <span class="badge streamlit">Streamlit</span>
+          </div>
+          <p>Simulação interativa da rotação de Wigner para composições sucessivas de boosts de Lorentz.</p>
+          <div class="card-links">
+            <a class="open" href="https://rotacao-de-wigner.streamlit.app/" target="_blank" rel="noopener">
+              Abrir simulação
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
+            </a>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
 
   <footer>
     <span>Última atualização: setembro de 2026</span>
-    <span>Acesso restrito ao orientador</span>
   </footer>
 </div>
+
+<script>
+  const tabs = document.querySelectorAll('nav.tabs button');
+  const panels = {
+    'tab-rg': document.getElementById('panel-rg'),
+    'tab-cosmo': document.getElementById('panel-cosmo'),
+    'tab-projetos': document.getElementById('panel-projetos'),
+  };
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+      Object.values(panels).forEach(p => p.classList.remove('active'));
+      tab.setAttribute('aria-selected', 'true');
+      panels[tab.id].classList.add('active');
+    });
+  });
+</script>
