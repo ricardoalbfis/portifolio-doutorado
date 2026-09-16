@@ -23,7 +23,8 @@ import streamlit as st
 st.set_page_config(page_title="Mapa CMB - comparativo", layout="wide")
 st.title("Simulador de mapas da radiacao cosmica de fundo (comparativo)")
 
-LMAX_CALC = 2500
+LMAX_CALC = 2200
+NSIDE_MAPA = 512  # maior resolucao viavel no servidor gratuito (ver notas de performance)
 
 PARAMS_REFERENCIA = dict(
     h0=67.4, ombh2=0.0224, omch2=0.120, ns=0.965, ln10_10_As=3.045, tau=0.054
@@ -76,7 +77,11 @@ with st.sidebar:
     tau = st.slider("$\\tau$ (reionizacao)", 0.01, 0.15, PARAMS_REFERENCIA["tau"])
 
     st.header("Mapa")
-    nside = st.selectbox("NSIDE", [32, 64, 128, 256], index=1)
+    st.caption(
+        f"Resolucao fixa em NSIDE={NSIDE_MAPA} (a maior que o servidor "
+        f"gratuito aguenta com folga) - resolve multipolos ate "
+        f"l={3 * NSIDE_MAPA - 1}."
+    )
     seed = st.number_input("Seed (aleatorio)", value=42, step=1)
 
     st.header("Polos (multipolos $\\ell$) a incluir")
@@ -179,21 +184,21 @@ try:
         st.subheader(f"Mapa simulado ({len(l_selecionados)} polo(s) ativo(s))")
         if l_selecionados:
             np.random.seed(int(seed))
-            mapa = hp.synfast(cl_filtrado, nside=nside, new=True, verbose=False)
+            mapa = hp.synfast(cl_filtrado, nside=NSIDE_MAPA, new=True, verbose=False)
             st.image(renderizar_mapa_png(mapa), use_container_width=True)
-            lmax_nside = 3 * nside - 1
+            lmax_nside = 3 * NSIDE_MAPA - 1
             if max(l_selecionados) > lmax_nside:
                 st.info(
-                    f"NSIDE={nside} só resolve até l={lmax_nside}; os polos "
-                    f"selecionados acima disso não aparecem no mapa (mas "
-                    f"aparecem no gráfico). Aumente o NSIDE para ve-los no mapa."
+                    f"O mapa (NSIDE={NSIDE_MAPA}) só resolve até l={lmax_nside}; "
+                    f"os polos selecionados acima disso não aparecem nele (mas "
+                    f"aparecem no gráfico do espectro acima)."
                 )
         else:
             st.warning("Selecione ao menos um polo para gerar o mapa.")
 except Exception as exc:
     st.error(
         "Nao foi possivel gerar o grafico/mapa para essa selecao "
-        f"({type(exc).__name__}). Tente reduzir a faixa de polos ou o NSIDE."
+        f"({type(exc).__name__}). Tente reduzir a faixa de polos selecionados."
     )
     st.stop()
 
