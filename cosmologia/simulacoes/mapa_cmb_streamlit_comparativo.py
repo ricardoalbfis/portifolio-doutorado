@@ -1,0 +1,154 @@
+"""
+Simulador interativo de mapas da radiacao cosmica de fundo (CMB) - versao
+comparativa.
+
+Igual ao mapa_cmb_streamlit.py, mas o grafico do espectro de potencia mostra
+tres curvas ao mesmo tempo:
+  - o espectro de referencia, fixo, com os parametros padrao (Planck-like);
+  - o espectro completo recalculado para os parametros atuais dos sliders;
+  - os multipolos (polos) escolhidos, em destaque.
+
+Rodar com:
+    streamlit run mapa_cmb_streamlit_comparativo.py
+"""
+
+import camb
+import healpy as hp
+import matplotlib.pyplot as plt
+import numpy as np
+import streamlit as st
+
+st.set_page_config(page_title="Mapa CMB - comparativo", layout="wide")
+st.title("Simulador de mapas da radiacao cosmica de fundo (comparativo)")
+
+LMAX_CALC = 1500
+
+PARAMS_REFERENCIA = dict(
+    h0=67.4, ombh2=0.0224, omch2=0.120, ns=0.965, As=2.1e-9, tau=0.054
+)
+
+
+@st.cache_data(show_spinner="Calculando espectro de potencia com CAMB...")
+def calcular_cl(h0, ombh2, omch2, ns, As, tau):
+    pars = camb.CAMBparams()
+    pars.set_cosmology(H0=h0, ombh2=ombh2, omch2=omch2, tau=tau)
+    pars.InitPower.set_params(As=As, ns=ns)
+    pars.set_for_lmax(LMAX_CALC, lens_potential_accuracy=1)
+    results = camb.get_results(pars)
+    powers = results.get_cmb_power_spectra(pars, CMB_unit="muK", raw_cl=True)
+    return powers["total"][:, 0]  # TT, indexado por l = 0..LMAX_CALC
+
+
+with st.sidebar:
+    st.header("Parametros cosmologicos")
+    h0 = st.slider("$H_0$ (km/s/Mpc)", 50.0, 90.0, PARAMS_REFERENCIA["h0"])
+    ombh2 = st.slider(
+        "$\\Omega_b h^2$", 0.005, 0.05, PARAMS_REFERENCIA["ombh2"], format="%.4f"
+    )
+    omch2 = st.slider(
+        "$\\Omega_c h^2$", 0.05, 0.30, PARAMS_REFERENCIA["omch2"], format="%.3f"
+    )
+    ns = st.slider("$n_s$ (indice espectral)", 0.85, 1.10, PARAMS_REFERENCIA["ns"])
+    As = st.number_input(
+        "$A_s$ (amplitude escalar)", value=PARAMS_REFERENCIA["As"], format="%.2e"
+    )
+    tau = st.slider("$\\tau$ (reionizacao)", 0.01, 0.15, PARAMS_REFERENCIA["tau"])
+
+    st.header("Mapa")
+    nside = st.selectbox("NSIDE", [32, 64, 128, 256], index=1)
+    seed = st.number_input("Seed (aleatorio)", value=42, step=1)
+
+    st.header("Polos (multipolos $\\ell$) a incluir")
+    modo = st.radio("Modo de selecao", ["Intervalo continuo", "Valores especificos"])
+
+    if modo == "Intervalo continuo":
+        lmin, lmax = st.slider(
+            "Faixa de $\\ell$ incluida no mapa", 2, LMAX_CALC, (2, 200)
+        )
+        l_selecionados = set(range(lmin, lmax + 1))
+    else:
+        texto = st.text_input(
+            "Lista de $\\ell$ separados por virgula (ex: 2,3,5,10,50)", "2,3,4,5"
+        )
+        try:
+            l_selecionados = {
+                int(x.strip()) for x in texto.split(",") if x.strip() != ""
+            }
+        except ValueError:
+            st.error("Digite apenas numeros inteiros separados por virgula.")
+            l_selecionados = set()
+
+
+# Espectro de referencia: sempre os parametros padrao, nunca muda com os sliders.
+cl_referencia = calcular_cl(**PARAMS_REFERENCIA)
+
+# Espectro completo recalculado para os parametros atuais escolhidos pelo usuario.
+cl_total = calcular_cl(h0, ombh2, omch2, ns, As, tau)
+
+cl_filtrado = np.zeros_like(cl_total)
+for l in l_selecionados:
+    if 0 <= l < len(cl_total):
+        cl_filtrado[l] = cl_total[l]
+
+col1, col2 = st.columns([1, 1])
+
+with col1:
+    st.subheader("Espectro de potencia")
+    st.latex(r"D_\ell = \frac{\ell(\ell+1)C_\ell}{2\pi}")
+
+    ell = np.arange(len(cl_total))
+    dl_referencia = ell * (ell + 1) * cl_referencia / (2 * np.pi)
+    dl_total = ell * (ell + 1) * cl_total / (2 * np.pi)
+    dl_filtrado = ell * (ell + 1) * cl_filtrado / (2 * np.pi)
+
+    fig_cl, ax = plt.subplots()
+    ax.plot(
+        ell[2:],
+        dl_referencia[2:],
+        label="Espectro de referencia (parametros padrao)",
+        color="lightgray",
+        linestyle="--",
+    )
+    ax.plot(
+        ell[2:],
+        dl_total[2:],
+        label="Espectro completo (parametros atuais)",
+        color="steelblue",
+    )
+    ax.scatter(
+        sorted(l_selecionados),
+        [dl_filtrado[l] for l in sorted(l_selecionados) if l < len(dl_filtrado)],
+        color="crimson",
+        s=15,
+        label="Polos selecionados",
+        zorder=3,
+    )
+    ax.set_xlabel("l")
+    ax.set_ylabel("D_l  [µK²]")
+    ax.legend()
+    st.pyplot(fig_cl)
+
+with col2:
+    st.subheader(f"Mapa simulado ({len(l_selecionados)} polo(s) ativo(s))")
+    if l_selecionados:
+        np.random.seed(int(seed))
+        mapa = hp.synfast(cl_filtrado, nside=nside, new=True, verbose=False)
+
+        plt.close("all")
+        hp.mollview(
+            mapa,
+            title="",
+            unit="µK",
+            cmap="RdBu_r",
+        )
+        st.pyplot(plt.gcf())
+    else:
+        st.warning("Selecione ao menos um polo para gerar o mapa.")
+
+st.caption(
+    "Polos = multipolos $\\ell$ do espectro de potencia angular. "
+    "$\\ell=2$ e o quadrupolo, $\\ell=3$ o octopolo, valores altos de "
+    "$\\ell$ correspondem a estruturas em escala angular menor no mapa. "
+    "A curva cinza tracejada e fixa (parametros padrao) e serve de referencia "
+    "para comparar com o espectro atual, em azul."
+)
