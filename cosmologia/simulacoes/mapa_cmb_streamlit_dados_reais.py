@@ -38,7 +38,7 @@ DADOS_PATH = os.path.join(
     os.path.dirname(__file__), "dados", "planck2018_TT_full_R3.01.txt"
 )
 MAPA_REAL_PATH = os.path.join(
-    os.path.dirname(__file__), "dados", "wmap9_ilc_nside64_uK.fits"
+    os.path.dirname(__file__), "dados", "wmap9_ilc_nside256_uK.fits"
 )
 
 
@@ -206,7 +206,7 @@ with col2:
     )
 
     st.subheader("2. Mapa real, so com os polos selecionados")
-    _, _, lmax_real, _ = calcular_alm_mapa_real()
+    _, _, lmax_real, nside_real = calcular_alm_mapa_real()
     l_sel_real = {l for l in l_selecionados if l <= lmax_real}
     if l_sel_real:
         mapa_real_filtrado, _ = filtrar_mapa_real(l_sel_real)
@@ -215,10 +215,10 @@ with col2:
         st.pyplot(plt.gcf())
         if any(l > lmax_real for l in l_selecionados):
             st.caption(
-                f"O mapa real tem resolucao NSIDE=64, entao so consegue "
-                f"mostrar ate l={lmax_real}; polos selecionados acima disso "
-                f"foram ignorados aqui (mas aparecem no grafico e no mapa "
-                f"simulado abaixo)."
+                f"O mapa real tem resolucao NSIDE={nside_real}, entao so "
+                f"consegue mostrar ate l={lmax_real}; polos selecionados "
+                f"acima disso foram ignorados aqui (mas aparecem no grafico "
+                f"e no mapa simulado abaixo)."
             )
     else:
         st.warning(f"Nenhum polo selecionado esta dentro do alcance do mapa real (l ≤ {lmax_real}).")

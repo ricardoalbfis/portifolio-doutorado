@@ -11,15 +11,16 @@ assimetrico observacional, l = 2 a 2508).
 
 ---
 
-`wmap9_ilc_nside64_uK.fits` — mapa real do ceu inteiro da CMB, WMAP 9 anos,
+`wmap9_ilc_nside256_uK.fits` — mapa real do ceu inteiro da CMB, WMAP 9 anos,
 metodo ILC (Internal Linear Combination), unidades em microK.
 
 Baixado em 2026-09-16 de:
 https://lambda.gsfc.nasa.gov/data/map/dr5/dfp/ilc/wmap_ilc_9yr_v5.fits
 
 NASA LAMBDA (WMAP Science Team). Arquivo original em nside=512 e mK;
-convertido para uK e reamostrado para nside=64 (hp.ud_grade) para manter o
-arquivo leve o suficiente para publicar no repositorio (204 KB em vez de
-~24 MB). O mapa do Planck em resolucao completa (nside=2048) chega a
+convertido para uK e reamostrado para nside=256 (hp.ud_grade), que permite
+mostrar multipolos reais ate l=767 (3*nside-1) e ainda fica leve o
+suficiente para o repositorio (~3 MB em vez de ~24 MB do original em
+nside=512). O mapa do Planck em resolucao completa (nside=2048) chega a
 varias centenas de MB e nao foi usado por esse motivo; o WMAP ILC e um
 mapa real e publico, so que de resolucao/sensibilidade menor que o Planck.
