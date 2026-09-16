@@ -12,6 +12,8 @@ Rodar com:
     streamlit run mapa_cmb_streamlit_comparativo.py
 """
 
+import io
+
 import camb
 import healpy as hp
 import matplotlib.pyplot as plt
@@ -21,7 +23,7 @@ import streamlit as st
 st.set_page_config(page_title="Mapa CMB - comparativo", layout="wide")
 st.title("Simulador de mapas da radiacao cosmica de fundo (comparativo)")
 
-LMAX_CALC = 1000
+LMAX_CALC = 2500
 
 PARAMS_REFERENCIA = dict(
     h0=67.4, ombh2=0.0224, omch2=0.120, ns=0.965, ln10_10_As=3.045, tau=0.054
@@ -38,6 +40,20 @@ def calcular_cl(h0, ombh2, omch2, ns, ln10_10_As, tau):
     results = camb.get_results(pars)
     powers = results.get_cmb_power_spectra(pars, CMB_unit="muK", raw_cl=True)
     return powers["total"][:, 0]  # TT, indexado por l = 0..LMAX_CALC
+
+
+@st.cache_data(show_spinner=False, max_entries=20)
+def renderizar_mapa_png(mapa):
+    """Desenha um mapa HEALPix e devolve os bytes do PNG. Em cache: o mesmo
+    mapa nunca e redesenhado duas vezes."""
+    plt.close("all")
+    hp.mollview(mapa, title="", unit="µK", cmap="RdBu_r", xsize=400)
+    fig = plt.gcf()
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=100, bbox_inches="tight")
+    plt.close("all")
+    buf.seek(0)
+    return buf.getvalue()
 
 
 with st.sidebar:
@@ -82,6 +98,17 @@ with st.sidebar:
         except ValueError:
             st.error("Digite apenas numeros inteiros separados por virgula.")
             l_selecionados = set()
+
+    if l_selecionados:
+        l_min_sel, l_max_sel = min(l_selecionados), max(l_selecionados)
+        theta_max = 180.0 / max(l_min_sel, 1)
+        theta_min = 180.0 / l_max_sel
+        st.metric("Escala angular no ceu", f"{theta_min:.2f}° a {theta_max:.2f}°")
+        st.caption(
+            f"Formula aproximada: θ ≈ 180°/ℓ. l={l_min_sel} corresponde a "
+            f"estruturas de ~{theta_max:.1f}°; l={l_max_sel} corresponde a "
+            f"~{theta_min:.2f}° (quanto maior l, menor o detalhe no ceu)."
+        )
 
 
 try:
@@ -145,15 +172,14 @@ with col2:
     if l_selecionados:
         np.random.seed(int(seed))
         mapa = hp.synfast(cl_filtrado, nside=nside, new=True, verbose=False)
-
-        plt.close("all")
-        hp.mollview(
-            mapa,
-            title="",
-            unit="µK",
-            cmap="RdBu_r",
-        )
-        st.pyplot(plt.gcf())
+        st.image(renderizar_mapa_png(mapa), use_container_width=True)
+        lmax_nside = 3 * nside - 1
+        if max(l_selecionados) > lmax_nside:
+            st.info(
+                f"NSIDE={nside} só resolve até l={lmax_nside}; os polos "
+                f"selecionados acima disso não aparecem no mapa (mas "
+                f"aparecem no gráfico). Aumente o NSIDE para ve-los no mapa."
+            )
     else:
         st.warning("Selecione ao menos um polo para gerar o mapa.")
 
