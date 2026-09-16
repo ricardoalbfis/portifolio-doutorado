@@ -17,15 +17,16 @@ import streamlit as st
 st.set_page_config(page_title="Mapa CMB", layout="wide")
 st.title("Simulador de mapas da radiacao cosmica de fundo")
 
-LMAX_CALC = 1500
+LMAX_CALC = 1000
 
 
-@st.cache_data(show_spinner="Calculando espectro de potencia com CAMB...")
-def calcular_cl(h0, ombh2, omch2, ns, As, tau):
+@st.cache_data(show_spinner="Calculando espectro de potencia com CAMB...", max_entries=8)
+def calcular_cl(h0, ombh2, omch2, ns, ln10_10_As, tau):
+    As = np.exp(ln10_10_As) / 1.0e10
     pars = camb.CAMBparams()
     pars.set_cosmology(H0=h0, ombh2=ombh2, omch2=omch2, tau=tau)
     pars.InitPower.set_params(As=As, ns=ns)
-    pars.set_for_lmax(LMAX_CALC, lens_potential_accuracy=1)
+    pars.set_for_lmax(LMAX_CALC, lens_potential_accuracy=0)
     results = camb.get_results(pars)
     powers = results.get_cmb_power_spectra(pars, CMB_unit="muK", raw_cl=True)
     return powers["total"][:, 0]  # TT, indexado por l = 0..LMAX_CALC
@@ -37,7 +38,9 @@ with st.sidebar:
     ombh2 = st.slider("$\\Omega_b h^2$", 0.005, 0.05, 0.0224, format="%.4f")
     omch2 = st.slider("$\\Omega_c h^2$", 0.05, 0.30, 0.120, format="%.3f")
     ns = st.slider("$n_s$ (indice espectral)", 0.85, 1.10, 0.965)
-    As = st.number_input("$A_s$ (amplitude escalar)", value=2.1e-9, format="%.2e")
+    ln10_10_As = st.slider(
+        "$\\ln(10^{10} A_s)$ (amplitude escalar)", 2.5, 3.7, 3.045, format="%.3f"
+    )
     tau = st.slider("$\\tau$ (reionizacao)", 0.01, 0.15, 0.054)
 
     st.header("Mapa")
@@ -65,7 +68,14 @@ with st.sidebar:
             l_selecionados = set()
 
 
-cl_total = calcular_cl(h0, ombh2, omch2, ns, As, tau)
+try:
+    cl_total = calcular_cl(h0, ombh2, omch2, ns, ln10_10_As, tau)
+except Exception as exc:
+    st.error(
+        "Essa combinacao de parametros nao pode ser calculada pelo CAMB "
+        f"({type(exc).__name__}). Ajuste os valores e tente novamente."
+    )
+    st.stop()
 
 cl_filtrado = np.zeros_like(cl_total)
 for l in l_selecionados:
