@@ -124,64 +124,78 @@ except Exception as exc:
     )
     st.stop()
 
-cl_filtrado = np.zeros_like(cl_total)
-for l in l_selecionados:
-    if 0 <= l < len(cl_total):
-        cl_filtrado[l] = cl_total[l]
+try:
+    cl_filtrado = np.zeros_like(cl_total)
+    for l in l_selecionados:
+        if 0 <= l < len(cl_total):
+            cl_filtrado[l] = cl_total[l]
 
-col1, col2 = st.columns([1, 1])
+    col1, col2 = st.columns([1, 1])
 
-with col1:
-    st.subheader("Espectro de potencia")
-    st.latex(r"D_\ell = \frac{\ell(\ell+1)C_\ell}{2\pi}")
+    with col1:
+        st.subheader("Espectro de potencia")
+        st.latex(r"D_\ell = \frac{\ell(\ell+1)C_\ell}{2\pi}")
 
-    ell = np.arange(len(cl_total))
-    dl_referencia = ell * (ell + 1) * cl_referencia / (2 * np.pi)
-    dl_total = ell * (ell + 1) * cl_total / (2 * np.pi)
-    dl_filtrado = ell * (ell + 1) * cl_filtrado / (2 * np.pi)
+        ell = np.arange(len(cl_total))
+        dl_referencia = ell * (ell + 1) * cl_referencia / (2 * np.pi)
+        dl_total = ell * (ell + 1) * cl_total / (2 * np.pi)
+        dl_filtrado = ell * (ell + 1) * cl_filtrado / (2 * np.pi)
 
-    fig_cl, ax = plt.subplots()
-    ax.plot(
-        ell[2:],
-        dl_referencia[2:],
-        label="Espectro de referencia (parametros padrao)",
-        color="lightgray",
-        linestyle="--",
+        # Com selecoes muito grandes (milhares de polos), mostrar cada ponto
+        # deixa o grafico pesado sem ganhar clareza - amostra para exibir.
+        marcadores = sorted(l_selecionados)
+        if len(marcadores) > 150:
+            passo = len(marcadores) // 150 + 1
+            marcadores = marcadores[::passo]
+
+        fig_cl, ax = plt.subplots()
+        ax.plot(
+            ell[2:],
+            dl_referencia[2:],
+            label="Espectro de referencia (parametros padrao)",
+            color="lightgray",
+            linestyle="--",
+        )
+        ax.plot(
+            ell[2:],
+            dl_total[2:],
+            label="Espectro completo (parametros atuais)",
+            color="steelblue",
+        )
+        ax.scatter(
+            marcadores,
+            [dl_filtrado[l] for l in marcadores if l < len(dl_filtrado)],
+            color="crimson",
+            s=15,
+            label="Polos selecionados",
+            zorder=3,
+        )
+        ax.set_xlabel("l")
+        ax.set_ylabel("D_l  [µK²]")
+        ax.legend()
+        st.pyplot(fig_cl)
+
+    with col2:
+        st.subheader(f"Mapa simulado ({len(l_selecionados)} polo(s) ativo(s))")
+        if l_selecionados:
+            np.random.seed(int(seed))
+            mapa = hp.synfast(cl_filtrado, nside=nside, new=True, verbose=False)
+            st.image(renderizar_mapa_png(mapa), use_container_width=True)
+            lmax_nside = 3 * nside - 1
+            if max(l_selecionados) > lmax_nside:
+                st.info(
+                    f"NSIDE={nside} só resolve até l={lmax_nside}; os polos "
+                    f"selecionados acima disso não aparecem no mapa (mas "
+                    f"aparecem no gráfico). Aumente o NSIDE para ve-los no mapa."
+                )
+        else:
+            st.warning("Selecione ao menos um polo para gerar o mapa.")
+except Exception as exc:
+    st.error(
+        "Nao foi possivel gerar o grafico/mapa para essa selecao "
+        f"({type(exc).__name__}). Tente reduzir a faixa de polos ou o NSIDE."
     )
-    ax.plot(
-        ell[2:],
-        dl_total[2:],
-        label="Espectro completo (parametros atuais)",
-        color="steelblue",
-    )
-    ax.scatter(
-        sorted(l_selecionados),
-        [dl_filtrado[l] for l in sorted(l_selecionados) if l < len(dl_filtrado)],
-        color="crimson",
-        s=15,
-        label="Polos selecionados",
-        zorder=3,
-    )
-    ax.set_xlabel("l")
-    ax.set_ylabel("D_l  [µK²]")
-    ax.legend()
-    st.pyplot(fig_cl)
-
-with col2:
-    st.subheader(f"Mapa simulado ({len(l_selecionados)} polo(s) ativo(s))")
-    if l_selecionados:
-        np.random.seed(int(seed))
-        mapa = hp.synfast(cl_filtrado, nside=nside, new=True, verbose=False)
-        st.image(renderizar_mapa_png(mapa), use_container_width=True)
-        lmax_nside = 3 * nside - 1
-        if max(l_selecionados) > lmax_nside:
-            st.info(
-                f"NSIDE={nside} só resolve até l={lmax_nside}; os polos "
-                f"selecionados acima disso não aparecem no mapa (mas "
-                f"aparecem no gráfico). Aumente o NSIDE para ve-los no mapa."
-            )
-    else:
-        st.warning("Selecione ao menos um polo para gerar o mapa.")
+    st.stop()
 
 st.caption(
     "Polos = multipolos $\\ell$ do espectro de potencia angular. "
