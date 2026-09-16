@@ -33,28 +33,28 @@ def calcular_cl(h0, ombh2, omch2, ns, As, tau):
 
 with st.sidebar:
     st.header("Parametros cosmologicos")
-    h0 = st.slider("H0 (km/s/Mpc)", 50.0, 90.0, 67.4)
-    ombh2 = st.slider("Omega_b h^2", 0.005, 0.05, 0.0224, format="%.4f")
-    omch2 = st.slider("Omega_c h^2", 0.05, 0.30, 0.120, format="%.3f")
-    ns = st.slider("n_s (indice espectral)", 0.85, 1.10, 0.965)
-    As = st.number_input("A_s (amplitude escalar)", value=2.1e-9, format="%.2e")
-    tau = st.slider("tau (reionizacao)", 0.01, 0.15, 0.054)
+    h0 = st.slider("$H_0$ (km/s/Mpc)", 50.0, 90.0, 67.4)
+    ombh2 = st.slider("$\\Omega_b h^2$", 0.005, 0.05, 0.0224, format="%.4f")
+    omch2 = st.slider("$\\Omega_c h^2$", 0.05, 0.30, 0.120, format="%.3f")
+    ns = st.slider("$n_s$ (indice espectral)", 0.85, 1.10, 0.965)
+    As = st.number_input("$A_s$ (amplitude escalar)", value=2.1e-9, format="%.2e")
+    tau = st.slider("$\\tau$ (reionizacao)", 0.01, 0.15, 0.054)
 
     st.header("Mapa")
     nside = st.selectbox("NSIDE", [32, 64, 128, 256], index=1)
     seed = st.number_input("Seed (aleatorio)", value=42, step=1)
 
-    st.header("Polos (multipolos l) a incluir")
+    st.header("Polos (multipolos $\\ell$) a incluir")
     modo = st.radio("Modo de selecao", ["Intervalo continuo", "Valores especificos"])
 
     if modo == "Intervalo continuo":
         lmin, lmax = st.slider(
-            "Faixa de l incluida no mapa", 2, LMAX_CALC, (2, 200)
+            "Faixa de $\\ell$ incluida no mapa", 2, LMAX_CALC, (2, 200)
         )
         l_selecionados = set(range(lmin, lmax + 1))
     else:
         texto = st.text_input(
-            "Lista de l separados por virgula (ex: 2,3,5,10,50)", "2,3,4,5"
+            "Lista de $\\ell$ separados por virgula (ex: 2,3,5,10,50)", "2,3,4,5"
         )
         try:
             l_selecionados = {
@@ -75,7 +75,8 @@ for l in l_selecionados:
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.subheader("Espectro de potencia (D_l = l(l+1)C_l / 2pi)")
+    st.subheader("Espectro de potencia")
+    st.latex(r"D_\ell = \frac{\ell(\ell+1)C_\ell}{2\pi}")
     ell = np.arange(len(cl_total))
     dl_total = ell * (ell + 1) * cl_total / (2 * np.pi)
     dl_filtrado = ell * (ell + 1) * cl_filtrado / (2 * np.pi)
@@ -113,7 +114,7 @@ with col2:
         st.warning("Selecione ao menos um polo para gerar o mapa.")
 
 st.caption(
-    "Polos = multipolos l do espectro de potencia angular. l=2 e o quadrupolo, "
-    "l=3 o octopolo, valores altos de l correspondem a estruturas em escala "
-    "angular menor no mapa."
+    "Polos = multipolos $\\ell$ do espectro de potencia angular. "
+    "$\\ell=2$ e o quadrupolo, $\\ell=3$ o octopolo, valores altos de "
+    "$\\ell$ correspondem a estruturas em escala angular menor no mapa."
 )
