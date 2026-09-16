@@ -1,5 +1,5 @@
-camb
-healpy
-matplotlib
-numpy
-streamlit
+camb==2.0.4
+healpy==1.20.0
+matplotlib==3.11.1
+numpy==2.5.3
+streamlit==1.64.0
