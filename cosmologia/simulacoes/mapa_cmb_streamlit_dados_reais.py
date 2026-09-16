@@ -36,6 +36,9 @@ PARAMS_REFERENCIA = dict(
 DADOS_PATH = os.path.join(
     os.path.dirname(__file__), "dados", "planck2018_TT_full_R3.01.txt"
 )
+MAPA_REAL_PATH = os.path.join(
+    os.path.dirname(__file__), "dados", "wmap9_ilc_nside64_uK.fits"
+)
 
 
 @st.cache_data(show_spinner="Carregando espectro observado pelo Planck...")
@@ -46,6 +49,11 @@ def carregar_dados_reais():
     erro_menos = dados[:, 2]
     erro_mais = dados[:, 3]
     return l_obs, dl_obs, erro_menos, erro_mais
+
+
+@st.cache_data(show_spinner="Carregando mapa real observado (WMAP)...")
+def carregar_mapa_real():
+    return hp.read_map(MAPA_REAL_PATH)
 
 
 @st.cache_data(show_spinner="Calculando espectro teorico com CAMB...", max_entries=8)
@@ -191,6 +199,25 @@ with col2:
         st.pyplot(plt.gcf())
     else:
         st.warning("Selecione ao menos um polo para gerar o mapa.")
+
+    st.subheader("Mapa real observado (WMAP 9 anos, ILC)")
+    mapa_real = carregar_mapa_real()
+    plt.close("all")
+    hp.mollview(
+        mapa_real,
+        title="",
+        unit="µK",
+        cmap="RdBu_r",
+    )
+    st.pyplot(plt.gcf())
+    st.caption(
+        "Mapa de temperatura de ceu inteiro medido de verdade pela sonda "
+        "WMAP (9 anos de observacao, metodo de combinacao linear interna - "
+        "ILC). Nao e simulacao: essas sao as flutuacoes de temperatura da "
+        "CMB realmente observadas no ceu (reamostradas para NSIDE=64 para "
+        "carregar rapido). A faixa horizontal ao centro e residuo da "
+        "limpeza de emissao da nossa propria galaxia, nao e sinal da CMB."
+    )
 
 st.caption(
     "Pontos cinzas com barra de erro = espectro TT realmente medido pelo "
