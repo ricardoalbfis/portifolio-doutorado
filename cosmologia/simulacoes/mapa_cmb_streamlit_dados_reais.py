@@ -6,11 +6,12 @@ este app carrega o espectro de potencia TT medido de verdade pelo satelite
 Planck (2018, dados publicos da ESA - ver dados/FONTE.md) e compara com a
 curva teorica do CAMB para os parametros escolhidos nos sliders.
 
-O mapa mostrado e uma REALIZACAO simulada a partir do espectro REAL
-observado (nao e o mapa literal do Planck, que exige baixar um arquivo
-FITS de dezenas de MB) - toda vez que voce muda de "seed" ve outra
-realizacao possivel, ilustrando a variancia cosmica: mesmo o ceu real e so
-uma entre muitas realizacoes possiveis do mesmo espectro.
+Mostra tres mapas lado a lado:
+  1. o mapa real observado pela sonda WMAP (imagem estatica, dados reais);
+  2. o mesmo mapa real, filtrado por harmonicos esfericos para mostrar so
+     os multipolos (polos) selecionados na barra lateral;
+  3. um mapa simulado (synfast) a partir da curva teorica do CAMB com os
+     parametros atuais, para comparar teoria com observacao.
 
 Rodar com:
     streamlit run mapa_cmb_streamlit_dados_reais.py
@@ -56,6 +57,23 @@ def carregar_mapa_real():
     return hp.read_map(MAPA_REAL_PATH)
 
 
+@st.cache_data(show_spinner="Decompondo o mapa real em harmonicos esfericos...")
+def calcular_alm_mapa_real():
+    mapa_real = carregar_mapa_real()
+    nside_real = hp.get_nside(mapa_real)
+    lmax_real = 3 * nside_real - 1
+    alm = hp.map2alm(mapa_real, lmax=lmax_real)
+    l_por_alm, _ = hp.Alm.getlm(lmax_real)
+    return alm, l_por_alm, lmax_real, nside_real
+
+
+def filtrar_mapa_real(l_selecionados):
+    alm, l_por_alm, lmax_real, nside_real = calcular_alm_mapa_real()
+    mascara = np.isin(l_por_alm, list(l_selecionados))
+    alm_filtrado = np.where(mascara, alm, 0)
+    return hp.alm2map(alm_filtrado, nside=nside_real), lmax_real
+
+
 @st.cache_data(show_spinner="Calculando espectro teorico com CAMB...", max_entries=8)
 def calcular_cl_teorico(h0, ombh2, omch2, ns, ln10_10_As, tau):
     As = np.exp(ln10_10_As) / 1.0e10
@@ -90,11 +108,11 @@ with st.sidebar:
     )
     tau = st.slider("$\\tau$ (reionizacao)", 0.01, 0.15, PARAMS_REFERENCIA["tau"])
 
-    st.header("Mapa (realizacao simulada a partir do espectro real)")
+    st.header("Mapa simulado (item 3)")
     nside = st.selectbox("NSIDE", [32, 64, 128, 256], index=1)
     seed = st.number_input("Seed (aleatorio)", value=42, step=1)
 
-    st.header("Polos (multipolos $\\ell$) observados a destacar")
+    st.header("Polos (multipolos $\\ell$) a destacar")
     modo = st.radio("Modo de selecao", ["Intervalo continuo", "Valores especificos"])
 
     lmax_sel = min(LMAX_CALC, LMAX_OBS)
@@ -125,20 +143,11 @@ except Exception as exc:
     )
     st.stop()
 
-# Converte o espectro OBSERVADO (D_l) para C_l, para poder gerar o mapa.
-# Valores negativos (ruido observacional em l alto) sao zerados: C_l e uma
-# variancia, nao pode ser negativa.
-ell_obs = l_obs.astype(float)
-cl_obs_bruto = 2 * np.pi * dl_obs / (ell_obs * (ell_obs + 1))
-cl_obs = np.clip(cl_obs_bruto, 0, None)
-
-cl_obs_indexado = np.zeros(LMAX_OBS + 1)
-cl_obs_indexado[l_obs] = cl_obs
-
-cl_filtrado = np.zeros_like(cl_obs_indexado)
+# Espectro teorico (CAMB, parametros dos sliders) filtrado pelos mesmos polos.
+cl_teorico_filtrado = np.zeros_like(cl_teorico)
 for l in l_selecionados:
-    if 0 <= l <= LMAX_OBS:
-        cl_filtrado[l] = cl_obs_indexado[l]
+    if 0 <= l < len(cl_teorico):
+        cl_teorico_filtrado[l] = cl_teorico[l]
 
 col1, col2 = st.columns([1, 1])
 
@@ -184,46 +193,54 @@ with col1:
     st.pyplot(fig_cl)
 
 with col2:
-    st.subheader(f"Mapa - realizacao do espectro real ({len(l_selecionados)} polo(s))")
-    if l_selecionados:
-        np.random.seed(int(seed))
-        mapa = hp.synfast(cl_filtrado, nside=nside, new=True, verbose=False)
-
-        plt.close("all")
-        hp.mollview(
-            mapa,
-            title="",
-            unit="µK",
-            cmap="RdBu_r",
-        )
-        st.pyplot(plt.gcf())
-    else:
-        st.warning("Selecione ao menos um polo para gerar o mapa.")
-
-    st.subheader("Mapa real observado (WMAP 9 anos, ILC)")
+    st.subheader("1. Mapa real observado (WMAP 9 anos, ILC)")
     mapa_real = carregar_mapa_real()
     plt.close("all")
-    hp.mollview(
-        mapa_real,
-        title="",
-        unit="µK",
-        cmap="RdBu_r",
-    )
+    hp.mollview(mapa_real, title="", unit="µK", cmap="RdBu_r")
     st.pyplot(plt.gcf())
     st.caption(
-        "Mapa de temperatura de ceu inteiro medido de verdade pela sonda "
-        "WMAP (9 anos de observacao, metodo de combinacao linear interna - "
-        "ILC). Nao e simulacao: essas sao as flutuacoes de temperatura da "
-        "CMB realmente observadas no ceu (reamostradas para NSIDE=64 para "
-        "carregar rapido). A faixa horizontal ao centro e residuo da "
+        "Imagem estatica: flutuacoes de temperatura da CMB realmente "
+        "observadas pela sonda WMAP (9 anos, metodo ILC), nao muda com os "
+        "controles ao lado. A faixa horizontal ao centro e residuo da "
         "limpeza de emissao da nossa propria galaxia, nao e sinal da CMB."
     )
+
+    st.subheader("2. Mapa real, so com os polos selecionados")
+    _, _, lmax_real, _ = calcular_alm_mapa_real()
+    l_sel_real = {l for l in l_selecionados if l <= lmax_real}
+    if l_sel_real:
+        mapa_real_filtrado, _ = filtrar_mapa_real(l_sel_real)
+        plt.close("all")
+        hp.mollview(mapa_real_filtrado, title="", unit="µK", cmap="RdBu_r")
+        st.pyplot(plt.gcf())
+        if any(l > lmax_real for l in l_selecionados):
+            st.caption(
+                f"O mapa real tem resolucao NSIDE=64, entao so consegue "
+                f"mostrar ate l={lmax_real}; polos selecionados acima disso "
+                f"foram ignorados aqui (mas aparecem no grafico e no mapa "
+                f"simulado abaixo)."
+            )
+    else:
+        st.warning(f"Nenhum polo selecionado esta dentro do alcance do mapa real (l ≤ {lmax_real}).")
+
+    st.subheader("3. Mapa simulado (CAMB, parametros atuais)")
+    if l_selecionados:
+        np.random.seed(int(seed))
+        mapa_sim = hp.synfast(cl_teorico_filtrado, nside=nside, new=True, verbose=False)
+        plt.close("all")
+        hp.mollview(mapa_sim, title="", unit="µK", cmap="RdBu_r")
+        st.pyplot(plt.gcf())
+        st.caption(
+            "Realizacao aleatoria gerada a partir da curva teorica do CAMB "
+            "com os parametros escolhidos nos sliders. Mude os parametros "
+            "ou o seed para ver como o mapa simulado se compara aos mapas "
+            "reais acima."
+        )
+    else:
+        st.warning("Selecione ao menos um polo para gerar o mapa.")
 
 st.caption(
     "Pontos cinzas com barra de erro = espectro TT realmente medido pelo "
     "Planck (2018, dados publicos da ESA). Curva azul = previsao teorica do "
-    "CAMB para os parametros escolhidos ao lado. O mapa e uma realizacao "
-    "aleatoria simulada a partir do espectro REAL medido (nao e o mapa "
-    "literal do Planck) - troque o seed para ver outra realizacao possivel "
-    "do mesmo ceu observado, ilustrando a variancia cosmica."
+    "CAMB para os parametros escolhidos ao lado."
 )
