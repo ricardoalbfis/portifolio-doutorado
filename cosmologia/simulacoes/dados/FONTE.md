@@ -24,3 +24,18 @@ suficiente para o repositorio (~3 MB em vez de ~24 MB do original em
 nside=512). O mapa do Planck em resolucao completa (nside=2048) chega a
 varias centenas de MB e nao foi usado por esse motivo; o WMAP ILC e um
 mapa real e publico, so que de resolucao/sensibilidade menor que o Planck.
+
+---
+
+`planck143_nside256_uK.fits` — mapa real do ceu inteiro da CMB medido pelo
+Planck a 143 GHz (campo I, temperatura), Data Release 3, unidades em microK.
+
+Baixado em 2026-09-24 de:
+https://pla.esac.esa.int/pla/aio/product-action?MAP.MAP_ID=HFI_SkyMap_143-field-IQU_2048_R3.00_full.fits
+
+Planck Legacy Archive (ESA). Arquivo original `HFI_SkyMap_143-field-IQU_2048_R3.00_full.fits`,
+nside=2048 (~50 milhoes de pixels, ~600 MB); convertido de K_CMB para uK_CMB e
+reamostrado para nside=256 (hp.ud_grade) para caber no repositorio e rodar
+leve no Streamlit Cloud gratuito. O notebook
+`cosmologia/notebooks/healpy_mapa_real_planck.ipynb` baixa e processa o
+arquivo original em resolucao completa (nside=2048 -> 512).
