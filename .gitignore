@@ -1,1 +1,6 @@
 .ipynb_checkpoints/
+*-Copy1.ipynb
+
+# Arquivos de dados grandes baixados manualmente (nao versionar - GitHub limita a 100MB)
+cosmologia/notebooks/*.fits
+cosmologia/notebooks/*.fits.gz
